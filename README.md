@@ -1,2 +1,2 @@
-# to-do-list-2.0
-Using Vite React 
+# to-do-list-3.0
+Using django/drf
