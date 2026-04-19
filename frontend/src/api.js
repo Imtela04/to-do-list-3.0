@@ -1,38 +1,4 @@
-const BASE = "";
-
-export async function getCategories() {
-    const res = await fetch(`${BASE}/api/categories`, { headers: authHeaders(false) });
-    if (res.status === 401) { logout(); return; }
-    return res.json();
-}
-
-export async function addCategory(name, icon = "🏷️") {
-    const res = await fetch(`${BASE}/api/categories`, {
-        method: "POST",
-        headers: authHeaders(),
-        body: new URLSearchParams({ name, icon })
-    });
-    if (!res.ok) throw new Error("Failed to add category");
-    return res.json();
-}
-
-export async function updateCategory(id, name, icon) {
-    const res = await fetch(`${BASE}/api/categories/${id}`, {
-        method: "PATCH",
-        headers: authHeaders(),
-        body: new URLSearchParams({ name, icon })
-    });
-    if (!res.ok) throw new Error("Failed to update category");
-    return res.json();
-}
-
-export async function deleteCategory(id) {
-    const res = await fetch(`${BASE}/api/categories/${id}`, {
-        method: "DELETE",
-        headers: authHeaders(false)
-    });
-    if (!res.ok) throw new Error("Failed to delete category");
-}
+const BASE = "http://localhost:8000";  // ← add Django's port explicitly
 
 
 function getToken() {
@@ -47,27 +13,28 @@ function authHeaders(hasBody = true) {
 
 
 export async function login(username, password) {
-  const res = await fetch(`${BASE}/api/login`, {
+  const res = await fetch(`${BASE}/api/auth/login/`, {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: new URLSearchParams({ username, password })
   });
   if (!res.ok) throw new Error("Invalid credentials");
   const data = await res.json();
-  localStorage.setItem("access_token", data.access_token);
+  localStorage.setItem("access_token", data.access);
 }
 
 
 
 export async function register(username, password) {
-  const res = await fetch(`${BASE}/api/register`, {
+    const res = await fetch(`${BASE}/api/auth/register/`, {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: new URLSearchParams({ username, password })
-  });
-  if (!res.ok) throw new Error("Registration failed");
-  const data = await res.json();
-  localStorage.setItem("access_token", data.access_token);
+    });
+    if (!res.ok) throw new Error("Registration failed");
+    // ⚠️ Django register doesn't auto-login, so call login separately
+    await login(username, password);
+
 }
 
 
@@ -76,8 +43,9 @@ export function logout() {
   window.location.href = "/login";
 }
 
+// ── Tasks ──────────────────────────────────────────────
 export async function getTasks() {
-  const res = await fetch(`${BASE}/api/tasks`, { headers: authHeaders() });
+  const res = await fetch(`${BASE}/api/tasks/`, { headers: authHeaders(false) });
   if (res.status === 401) { logout(); return; }
   return res.json();
 }
@@ -85,7 +53,7 @@ export async function getTasks() {
 export async function addTask(title,description,deadline,category) {
   ////console.log("addTask called with:", { title, description, deadline, category }); 
 
-  const res = await fetch(`${BASE}/api/tasks`, {
+  const res = await fetch(`${BASE}/api/tasks/add/`, {
     method: "POST",
     headers: authHeaders(),
     body: new URLSearchParams({ title,description,deadline,category })
@@ -95,7 +63,7 @@ export async function addTask(title,description,deadline,category) {
   }
 
 export async function updateTaskTitle(id, title) {
-    const res = await fetch(`${BASE}/api/tasks/${id}/title`, {
+    const res = await fetch(`${BASE}/api/tasks/${id}/title/`, {
         method: "PATCH",
         headers: authHeaders(),
         body: new URLSearchParams({ title })
@@ -105,7 +73,7 @@ export async function updateTaskTitle(id, title) {
 }
 
 export async function updateTaskDescription(id, description) {
-    const res = await fetch(`${BASE}/api/tasks/${id}/description`, {
+    const res = await fetch(`${BASE}/api/tasks/${id}/description/`, {
         method: "PATCH",
         headers: authHeaders(),
         body: new URLSearchParams({ description })
@@ -115,7 +83,7 @@ export async function updateTaskDescription(id, description) {
 }
 
 export async function updateTaskDeadline(id, deadline) {
-    const res = await fetch(`${BASE}/api/tasks/${id}/deadline`, {
+    const res = await fetch(`${BASE}/api/tasks/${id}/deadline/`, {
         method: "PATCH",
         headers: authHeaders(),
         body: new URLSearchParams({ deadline })
@@ -125,7 +93,7 @@ export async function updateTaskDeadline(id, deadline) {
 }
 
 export async function updateTaskCategory(id, category) {
-    const res = await fetch(`${BASE}/api/tasks/${id}/category`, {
+    const res = await fetch(`${BASE}/api/tasks/${id}/category/`, {
         method: "PATCH",
         headers: authHeaders(),
         body: new URLSearchParams({ category })
@@ -134,7 +102,7 @@ export async function updateTaskCategory(id, category) {
     return res.json();
 }
 export async function toggleTask(id) {
-    const res = await fetch(`${BASE}/api/tasks/${id}/toggle`, {
+    const res = await fetch(`${BASE}/api/tasks/${id}/toggle/`, {
         method: "PATCH",
         headers: authHeaders(false) 
     });
@@ -143,8 +111,46 @@ export async function toggleTask(id) {
 }
 
 export async function deleteTask(id) {
-  await fetch(`${BASE}/api/tasks/${id}`, {
+    const res = await fetch(`${BASE}/api/tasks/${id}/delete/`, {
     method: "DELETE",
-    headers: authHeaders()
+    headers: authHeaders(false)
   });
+    if (!res.ok) throw new Error("Failed to delete task");
+}
+
+
+// ── Categories ─────────────────────────────────────────
+
+export async function getCategories() {
+    const res = await fetch(`${BASE}/api/categories/`, { headers: authHeaders(false) });
+    if (res.status === 401) { logout(); return; }
+    return res.json();
+}
+
+export async function addCategory(name, icon = "🏷️") {
+    const res = await fetch(`${BASE}/api/categories/add/`, {
+        method: "POST",
+        headers: authHeaders(),
+        body: new URLSearchParams({ name, icon })
+    });
+    if (!res.ok) throw new Error("Failed to add category");
+    return res.json();
+}
+
+export async function updateCategory(id, name, icon) {
+    const res = await fetch(`${BASE}/api/categories/${id}/update/`, {
+        method: "PATCH",
+        headers: authHeaders(),
+        body: new URLSearchParams({ name, icon })
+    });
+    if (!res.ok) throw new Error("Failed to update category");
+    return res.json();
+}
+
+export async function deleteCategory(id) {
+    const res = await fetch(`${BASE}/api/categories/${id}/delete/`, {
+        method: "DELETE",
+        headers: authHeaders(false)
+    });
+    if (!res.ok) throw new Error("Failed to delete category");
 }
