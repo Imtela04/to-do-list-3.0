@@ -1,0 +1,242 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
+@import "tailwindcss";
+
+:root {
+    --bg:             linear-gradient(to bottom, #fae9bc, #fabde5, #65468a);
+    --surface:        #ffffff;
+    --text:           #1a1a2e;
+    --text-muted:     #666;
+    --accent:         #997ec7;
+    --accent-hover:   #c4aaee;
+    --card-a:         #fce7d9;
+    --card-a-text:    #6c5b8a;
+    --card-b:         #cfb7f7;
+    --card-b-text:    var(--card-a-text);
+    --card-blue:      #8a75af;
+    --card-blue-text: #d2cae6;
+    --calendar-color: var(--card-a);
+    --calendar-text:  #6c5b8a;
+    --clock-color:    #6c5b8a;
+    --clock-text:     #e8deff;
+    --danger:         #ef4444;
+}
+
+.dark {
+    --bg:             linear-gradient(to bottom, #040118, #351032, #743339);
+    --surface:        #656179;
+    --text:           #ede9fe;
+    --text-muted:     #a78bfa;
+    --accent:         #7c3aed;
+    --accent-hover:   #9d6eef;
+    --card-a:         #1a1828;
+    --card-a-text:    #ede9fe;
+    --card-b:         #331246;
+    --card-b-text:    #ede9fe;
+    --card-blue:      #110836;
+    --card-blue-text: #d2cae6;
+    --calendar-color: var(--card-blue);
+    --calendar-text:  #e0f2fe;
+    --clock-color:    #6c5b8a;
+    --clock-text:     #ede9fe;
+    --danger:         #ef4444;
+}
+
+/* ── Base ─────────────────────────────────────── */
+html, body, #root, #outer-container {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    background: var(--bg);
+    background-attachment: fixed;
+    transition: background 0.5s ease;
+}
+
+body {
+    font-family: monospace;
+    background: transparent;
+    min-height: 100%;
+}
+
+#root, #outer-container {
+    min-height: 100%;
+    background: transparent;
+}
+
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    background: transparent;
+}
+
+#outer-container,
+#root {
+    height: 100%;
+    min-height: 100vh;
+    background: transparent;
+}
+
+html {
+    background: var(--bg);
+    background-attachment: fixed;
+    transition: background 0.5s ease;
+}
+
+#page-wrap {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: transparent;
+}
+
+/* ── Task preview animation ───────────────────── */
+.task-preview {
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    margin-top: 0;
+    font-size: 0.9rem;
+    transition: max-height 0.3s ease, opacity 0.3s ease, margin-top 0.25s ease, padding-top 0.25s ease;
+}
+
+.task-preview p {
+    margin: 2px 0;
+    opacity: 0.85;
+}
+
+.task-wrapper:hover .task-preview,
+.task-wrapper.clicked .task-preview {
+    max-height: 120px;
+    opacity: 1;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+/* ── React datepicker ─────────────────────────── */
+.react-datepicker {
+    font-family: monospace;
+    background: var(--surface);
+    border: none;
+    border-radius: 30px;
+    box-shadow: var(--shadow-lg);
+}
+
+.react-datepicker__header {
+    background: var(--accent);
+    border: none;
+    border-radius: 30px 0 0;
+}
+
+.react-datepicker__current-month,
+.react-datepicker__day-name,
+.react-datepicker-time__header {
+    color: #fff;
+}
+
+.react-datepicker__day {
+    color: var(--text);
+    border-radius: 50%;
+}
+
+.react-datepicker__day:hover {
+    background: var(--accent);
+    color: #fff;
+}
+
+.react-datepicker__day--selected,
+.react-datepicker__day--keyboard-selected {
+    background: var(--accent);
+    color: #fff;
+}
+
+.react-datepicker__day--disabled {
+    opacity: 0.3;
+}
+
+.react-datepicker__time-container,
+.react-datepicker__time-box {
+    background: var(--surface);
+    color: var(--text);
+    border-top-right-radius: 30px;
+}
+
+.react-datepicker__time-list {
+    border-top-right-radius: 30px;
+}
+
+.react-datepicker__time-list-item:hover {
+    background: var(--accent) !important;
+    color: #fff;
+}
+
+.react-datepicker__time-list-item--selected {
+    background: var(--accent) !important;
+    border-radius: 30px;
+}
+
+/* ── React burger menu ────────────────────────── */
+.bm-burger-button {
+    position: fixed;
+    width: 28px;
+    height: 22px;
+    left: 12px;
+    top: 60px;
+    z-index: 1000;
+}
+
+.bm-burger-bars {
+    background: var(--accent);
+}
+
+.bm-cross-button {
+    height: 24px;
+    width: 24px;
+}
+
+.bm-cross {
+    background: var(--danger);
+}
+
+.bm-menu-wrap {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    height: 100% !important;
+    width: 220px !important;
+}
+
+.bm-menu {
+    background: var(--calendar-color);
+    font-size: 1.15em;
+    height: 100%;
+}
+
+.bm-overlay {
+    background: rgba(0, 0, 0, 0.4) !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+}
+
+.bm-item-list {
+    height: auto !important;
+}
+
+.bm-menu {
+    /* background: transparent; */
+    padding: 2em 1.5em;
+    font-size: 1.15em;
+    overflow-y: auto;
+    height: 100% !important;
+}
+
+.bm-item-list {
+    height: 100% !important;
+    display: flex;
+    flex-direction: column;
+}
