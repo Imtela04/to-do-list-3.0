@@ -31,7 +31,14 @@ export async function register(username, password) {
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: new URLSearchParams({ username, password })
     });
-    if (!res.ok) throw new Error("Registration failed");
+    // if (!res.ok) throw new Error("Registration failed");
+    if (!res.ok) {
+        const err = await res.json();
+        console.log("REGISTER ERROR:", err);  // ← add this
+        throw new Error("Registration failed");
+    }
+
+
     // ⚠️ Django register doesn't auto-login, so call login separately
     await login(username, password);
 
