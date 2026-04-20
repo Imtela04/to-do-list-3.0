@@ -54,8 +54,9 @@ REST_FRAMEWORK = {
 }
 
 CORS_ALLOWED_ORIGINS = [
-    "https://Imtela04.github.io",
+    "https://imtela04.github.io",
     "http://localhost:5173",
+    "http://localhost:3000",
 ]
 from datetime import timedelta
 

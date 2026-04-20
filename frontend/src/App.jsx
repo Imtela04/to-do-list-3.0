@@ -3,7 +3,6 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import Login from "./pages/login";
 import Register from "./pages/register";
 import Index from "./pages/index";
-import Add from "./pages/index";
 import "./style.css";
 
 export const DarkModeContext = createContext();
@@ -37,6 +36,7 @@ export default function App() {
                 <Route path="/login"    element={<Login />} />
                 <Route path="/register" element={<Register />} />
                 <Route path="/"         element={<PrivateRoute><Index /></PrivateRoute>} />
+                <Route path="*"         element={<Navigate to="/" replace />} />
             </Routes>
         </DarkModeContext.Provider>
     );
