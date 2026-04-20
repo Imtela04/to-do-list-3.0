@@ -27,14 +27,16 @@ const isTokenExpired = () => {
     } catch { return true; }
 };
 
-const styles = {
+export const styles = {
     bg:       { background: "var(--bg)",             color: "var(--text)" },
     surface:  { background: "var(--surface)",        color: "var(--text)" },
     cardA:    { background: "var(--card-a)",         color: "var(--card-a-text)" },
+    cardA_text: {color: "var(--card-a-text)"},
     accent:   { background: "var(--accent)" },
     calendar: { background: "var(--calendar-color)", color: "var(--card-a-text)" },
     label:    { color: "var(--card-b)" },
     labelAlt: { color: "var(--card-a-text)" },
+    calendar_text: {color:"var(--calendar-text)"},
 };
 
 const cardStyle = {
@@ -71,8 +73,7 @@ export default function Index() {
         const data = await getCategories();
         if (data) {
             setCustomCats(data);
-            // if selected category no longer exists, clear it
-            if (selectedCategory && !DEFAULT_CATEGORIES.find(c => c.value === selectedCategory)) {
+            if (selectedCategory && !["uncategorized"].includes(selectedCategory)) {
                 const stillExists = data.find(c => c.name === selectedCategory);
                 if (!stillExists) setSelectedCategory(null);
             }
@@ -124,7 +125,7 @@ export default function Index() {
         const matched    = tasks.filter(t => {
             if (!t.deadline) return false;
             const d = new Date(t.deadline);
-            return d.getUTCDate() === dayNum &&       // ← UTC
+            return d.getUTCDate() === dayNum &&
                 d.getUTCMonth() === monthIndex &&
                 d.getUTCFullYear() === new Date().getUTCFullYear();
         });
@@ -148,7 +149,7 @@ export default function Index() {
         setEditingTask(task.id);
         setEditForm({
             title:       task.title || "",
-            description: task.description || "",
+            description: task.description || "No description",
             deadline:    task.deadline ? task.deadline.slice(0, 16) : "",
             category:    task.category?.name || ""
         });
@@ -188,12 +189,11 @@ export default function Index() {
         refresh();
     };
 
-    // helper to compare deadline dates correctly
     const isSameDay = (deadlineStr, targetDate) => {
         if (!deadlineStr) return false;
         const d = new Date(deadlineStr);
         return (
-            d.getUTCDate()  === targetDate.getUTCDate() &&   // ← use UTC
+            d.getUTCDate()  === targetDate.getUTCDate() &&
             d.getUTCMonth() === targetDate.getUTCMonth() &&
             d.getUTCFullYear() === targetDate.getUTCFullYear()
         );
@@ -212,7 +212,7 @@ export default function Index() {
     const clearFilter         = () => { setHighlightedIds([]); setSelectedDate(null); setIsFiltered(false); };
     const clearCategoryFilter = () => setSelectedCategory(null);
 
-    const today    = DAY_NAMES[new Date().getDay()];
+    const today = DAY_NAMES[new Date().getDay()];
 
     const visibleTasks = (() => {
         let list = isFiltered ? tasks.filter(t => highlightedIds.includes(t.id)) : tasks;
@@ -246,9 +246,8 @@ export default function Index() {
         onSelect: setSelectedCategory, styles
     };
 
-    // Derived flags for global (no date filter) empty states
-    const noDateFilter = !selectedDate;
-    const globalEmpty  = noDateFilter && tasks.length === 0;
+    const noDateFilter  = !selectedDate;
+    const globalEmpty   = noDateFilter && tasks.length === 0;
     const globalAllDone = noDateFilter && tasks.length > 0 && tasks.every(t => t.completed);
 
     return (
@@ -256,18 +255,19 @@ export default function Index() {
         <div id="page-wrap" className="flex flex-col w-full min-h-screen"
              style={{ color: "var(--card-b)", padding: "0" }}>
 
+            {/* Mobile burger — position:fixed overlay, takes NO layout space */}
+            <div className="md:hidden">
+                <Menu left width={220} pageWrapId="page-wrap" outerContainerId="outer-container" disableAutoFocus>
+                    <CategoryStatsPanel {...catStatsProps} customCats={customCats} onCatsChange={loadCats} />
+                </Menu>
+            </div>
+
             <Navbar showLogout username={username} />
 
             {/* Three column layout */}
             <div className="flex flex-row gap-2 md:gap-8 w-full min-h-screen px-2 md:px-4 pt-2">
-                {/* Mobile burger */}
-                <div className="md:hidden">
-                    <Menu left width={220} pageWrapId="page-wrap" outerContainerId="outer-container" disableAutoFocus>
-                        <CategoryStatsPanel {...catStatsProps} customCats={customCats} onCatsChange={loadCats} />
-                    </Menu>
-                </div>
 
-                {/* Desktop sidebar */}
+                {/* Desktop sidebar only */}
                 <div className="hidden md:flex shrink-0">
                     <CategoryStatsPanel {...catStatsProps} customCats={customCats} onCatsChange={loadCats}/>
                 </div>
@@ -282,7 +282,7 @@ export default function Index() {
                         <div className="flex items-center gap-1 flex-wrap">
                             <button onClick={filterToday}
                                 className="text-xs font-semibold px-2 py-1 rounded-full cursor-pointer transition-all duration-300 hover:scale-105"
-                                style={{ background: "var(--accent)", color: "var(--card-b-text)" }}>
+                                style={styles.cardA}>
                                 📅 Today
                             </button>
                             {selectedDate && (
@@ -296,15 +296,14 @@ export default function Index() {
                                 <div className="flex items-center text-xs gap-1 font-semibold"
                                      style={{ color: "var(--card-a-text)" }}>
                                     {selectedCategory}
-                                    <button onClick={clearCategoryFilter} style={{ color: "var(--danger)" }}>✕</button>
+                                    <button onClick={clearCategoryFilter} style={{ color: "var(--danger)", cursor: "pointer" }}>✕</button>
                                 </div>
                             )}
                         </div>
 
-                        {/* Right — search (desktop only) + per-page (desktop only) + pagination + add */}
+                        {/* Right — search + per-page + pagination + add */}
                         <div className="flex flex-wrap items-center gap-1">
 
-                            {/* Search — desktop only */}
                             <div className="hidden md:flex items-center gap-1">
                                 <input
                                     type="text"
@@ -325,7 +324,6 @@ export default function Index() {
                                 )}
                             </div>
 
-                            {/* Per-page — desktop only */}
                             <div className="hidden md:flex items-center gap-1 text-xs font-semibold"
                                  style={{ color: "var(--card-a-text)", opacity: 0.7 }}>
                                 <span className="opacity-60">Show</span>
@@ -340,7 +338,6 @@ export default function Index() {
                                 ))}
                             </div>
 
-                            {/* Pagination */}
                             {totalPages > 1 && (
                                 <div className="flex items-center gap-1 text-xs font-semibold">
                                     <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
@@ -355,7 +352,6 @@ export default function Index() {
                                 </div>
                             )}
 
-                            {/* Add button */}
                             <button onClick={() => setAdd(true)}
                                 className="w-7 h-7 md:w-8 md:h-8 rounded-full text-white border-none cursor-pointer shadow-md transition-all duration-500 hover:scale-110 hover:rotate-90"
                                 style={styles.accent}
@@ -376,7 +372,7 @@ export default function Index() {
                         </div>
                     )}
 
-                    {/* Empty states — global (no date filter) */}
+                    {/* Empty states — global */}
                     {globalEmpty && (
                         <div className="w-full px-4 py-6 text-2xl md:text-4xl font-mono rounded-[14px] text-center" style={styles.cardA}>
                             Nothing to do
@@ -391,11 +387,11 @@ export default function Index() {
                     {/* Task cards */}
                     {pagedTasks.map((task, i) => (
                         <div key={task.id}
-                            className={`task-wrapper w-full px-3 md:px-4 py-3 rounded-[14px] relative cursor-pointer shadow-sm transition-all duration-500 hover:shadow-lg ${clickedCard === task.id ? "clicked" : ""}`}
+                            className={`task-wrapper w-full px-3 md:px-4 py-3 rounded-[14px] relative cursor-pointer shadow-sm transition-all duration-500 hover:shadow-lg overflow-hidden ${clickedCard === task.id ? "clicked" : ""}`}
                             style={cardStyle[cardColors[i % 2]]}
                             onClick={() => handleCardClick(task.id)}>
 
-                            <div className={`font-semibold text-sm md:text-base pr-20 leading-snug ${task.completed ? "line-through opacity-50" : ""}`}>
+                            <div className={`font-semibold text-sm md:text-base pr-20 leading-snug min-w-0 break-words ${task.completed ? "line-through opacity-50" : ""}`}>
                                 {task.title}
                             </div>
 
@@ -443,7 +439,7 @@ export default function Index() {
                     )}
                 </div>
 
-                {/* Right panel — shrinks on mobile */}
+                {/* Right panel */}
                 <div className="flex flex-col gap-3 shrink-0 w-[130px] md:w-auto py-2">
                     <RightPanel
                         tasks={tasks}
@@ -468,7 +464,6 @@ export default function Index() {
             onClose={() => { setAdd(false); setAddForm({ title: "", description: "", deadline: defaultDeadline(), category: "" }); setError(""); }}
             styles={styles}
             customCats={customCats} onCatsChange={loadCats}
-
         />
         <EditModal
             taskId={editingTask} form={editForm} setForm={setEditForm}

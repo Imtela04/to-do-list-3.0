@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { addCategory, deleteCategory, updateCategory } from "../../api";
-
+import { styles } from "../../pages/index";
 export const DEFAULT_CATEGORIES = []; // no longer needed but keep export for compatibility
 
 const EMOJI_OPTIONS = ["💼","🏠","💪","💰","📚","📌","🏷️","⭐","🎯","🔥","🎨","🎵","🏋️","✈️","🍕"];
@@ -45,7 +45,7 @@ export function CategoryPanel({ tasks, selected, onSelect, customCats = [], onCa
 
     return (
         <div className="flex flex-col gap-1 py-5 w-44 shrink-0">
-            <p className="text-xs font-semibold uppercase tracking-widest px-3 mb-2">Categories</p>
+            <p className="text-xs font-semibold uppercase tracking-widest px-3 mb-2" style={styles.calendar_text}>Categories</p>
 
             {items.map(item => {
                 const isActive = selected === item.value;

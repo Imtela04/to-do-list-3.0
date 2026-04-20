@@ -2,18 +2,19 @@ import { useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { DarkModeContext } from "../App";
 import { logout } from "../api";
+import { styles } from "../pages/index";
 
 export default function Navbar({ showLogout = false, username = null }) {
     const { isDark, setIsDark } = useContext(DarkModeContext);
     const navigate              = useNavigate();
-    const [open,setOpen]        =useState(false);
+    const [open, setOpen]       = useState(false);
 
     const handleLogout = () => {
         logout();
         navigate("/login");
     };
 
-    const greeting     = (() => {
+    const greeting = (() => {
         const h = new Date().getHours();
         if (h >= 5  && h < 12) return { emoji: "🌤", text: "Good Morning",   sub: "Fresh start. Let's get it!" };
         if (h >= 12 && h < 17) return { emoji: "🌥", text: "Good Afternoon", sub: "Keep up the momentum!" };
@@ -21,24 +22,24 @@ export default function Navbar({ showLogout = false, username = null }) {
         return                         { emoji: "☆☽", text: "Good Night",     sub: "Recharge for tomorrow." };
     })();
 
+    return (
+        <div className="w-full bg-transparent px-2 md:px-8 pt-3 pb-2">
 
-        return (
-        <div className="w-full bg-transparent px-2 md:px-8 pt-3 pb-2 relative">
-            <div className="flex items-center">
-                {/* Logo — hidden on mobile to save space */}
-                <h2 className=" font-bold text-4xl shrink-0" style={{ color: "var(--card-b-text)" }}>
+            {/* Row 1: logo on left, controls on right — always */}
+            <div className="flex items-center justify-between px-1">
+                <h2 className="font-bold text-3xl md:text-4xl shrink-0" style={styles.calendar_text}>
                     what-do
                 </h2>
 
-                {/* Greeting */}
-                <div className="w-full bg-transparent px-2 md:px-8 pt-3 pb-2 relative pl-12 md:pl-8">
-                    <h1 className="text-lg md:text-3xl font-bold">
+                {/* Greeting — desktop only, absolutely centred */}
+                <div className="hidden md:block text-center">
+                    <h1 className="text-3xl font-bold" style={styles.cardA_text}>
                         {greeting.emoji} {greeting.text}, {username}
                     </h1>
-                    <p className="text-xs md:text-lg">{greeting.sub}</p>
+                    <p className="text-lg" style={styles.labelAlt}>{greeting.sub}</p>
                 </div>
 
-                {/* Right — dark toggle + user dropdown */}
+                {/* Controls — always on the right */}
                 <div className="flex items-center gap-2 shrink-0 font-semibold text-sm" style={{ color: "var(--card-b)" }}>
                     <button
                         onClick={() => setIsDark(prev => !prev)}
@@ -77,6 +78,15 @@ export default function Navbar({ showLogout = false, username = null }) {
                     )}
                 </div>
             </div>
+
+            {/* Row 2: greeting — mobile only */}
+            <div className="md:hidden text-center px-2 pt-1">
+                <h1 className="text-base font-bold" style={styles.cardA_text}>
+                    {greeting.emoji} {greeting.text}, {username}
+                </h1>
+                <p className="text-xs" style={styles.labelAlt}>{greeting.sub}</p>
+            </div>
+
         </div>
     );
 }
