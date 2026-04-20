@@ -81,7 +81,7 @@ export default function Index() {
     };
     useEffect(() => { loadCats(); }, []);
     useEffect(() => {
-        fetch("http://localhost:8000/api/me/", {
+        fetch("https://to-do-list-30-production.up.railway.app", {
             headers: { "Authorization": `Bearer ${localStorage.getItem("access_token")}` }
         })
         .then(r => r.json())

@@ -1,4 +1,4 @@
-const BASE = "http://localhost:8000";  // ← add Django's port explicitly
+const BASE = "https://to-do-list-30-production.up.railway.app";  // ← add Django's port explicitly
 
 
 function getToken() {
