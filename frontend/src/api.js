@@ -11,6 +11,11 @@ function authHeaders(hasBody = true) {
     return headers;
 }
 
+// add this helper at the top of api.js
+function toUTCString(localDatetime) {
+    if (!localDatetime) return "";
+    return new Date(localDatetime).toISOString();
+}
 
 export async function login(username, password) {
   const res = await fetch(`${BASE}/api/auth/login/`, {
@@ -57,17 +62,21 @@ export async function getTasks() {
   return res.json();
 }
 
-export async function addTask(title,description,deadline,category) {
-  ////console.log("addTask called with:", { title, description, deadline, category }); 
+export async function addTask(title, description, deadline, category) {
+    const res = await fetch(`${BASE}/api/tasks/add/`, {
+        method: "POST",
+        headers: authHeaders(),
+        body: new URLSearchParams({ 
+            title, 
+            description, 
+            deadline: toUTCString(deadline),  // ← convert
+            category 
+        })
+    });
+    if (!res.ok) throw new Error(`${res.status}: ${res.statusText}`);
+    return res.json();
+}
 
-  const res = await fetch(`${BASE}/api/tasks/add/`, {
-    method: "POST",
-    headers: authHeaders(),
-    body: new URLSearchParams({ title,description,deadline,category })
-  });
-  if (!res.ok) throw new Error(`${res.status}: ${res.statusText}`);
-  return res.json();
-  }
 
 export async function updateTaskTitle(id, title) {
     const res = await fetch(`${BASE}/api/tasks/${id}/title/`, {
@@ -93,7 +102,7 @@ export async function updateTaskDeadline(id, deadline) {
     const res = await fetch(`${BASE}/api/tasks/${id}/deadline/`, {
         method: "PATCH",
         headers: authHeaders(),
-        body: new URLSearchParams({ deadline })
+        body: new URLSearchParams({ deadline: toUTCString(deadline) })  // ← convert
     });
     if (!res.ok) throw new Error("Failed to update deadline");
     return res.json();

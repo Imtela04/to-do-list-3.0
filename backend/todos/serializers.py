@@ -30,13 +30,6 @@ class UserPublicSerializer(serializers.ModelSerializer):
         model = User
         fields = ['username']
 # replaces TaskCreate + TaskResponse combined
-class TodoSerializer(serializers.ModelSerializer):
-    owner = UserPublicSerializer(read_only=True)  # replaces owner_id
-
-    class Meta:
-        model = Todo
-        fields = ['id', 'title', 'completed', 'description', 'deadline', 'category', 'owner']
-        read_only_fields = ['id', 'owner']
 
 # class TaskCreate(BaseModel):
 #     title: str
@@ -56,7 +49,14 @@ class CategorySerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'icon']
         read_only_fields = ['id']
 
+class TodoSerializer(serializers.ModelSerializer):
+    owner = UserPublicSerializer(read_only=True)  # replaces owner_id
+    category = CategorySerializer(read_only=True)
 
+    class Meta:
+        model = Todo
+        fields = ['id', 'title', 'completed', 'description', 'deadline', 'category', 'owner']
+        read_only_fields = ['id', 'owner']
 # ❌ not needed — simplejwt handles this automatically
 # class Token(BaseModel):
 #     access_token: str

@@ -14,7 +14,7 @@ import { CategoryStatsPanel } from "../components/panels/category-panel";
 const getUsername = () => {
     const token = localStorage.getItem("access_token");
     if (!token) return null;
-    try { return JSON.parse(atob(token.split(".")[1])).sub; }
+    try { return JSON.parse(atob(token.split(".")[1])).username; }
     catch { return null; }
 };
 
@@ -65,6 +65,7 @@ export default function Index() {
     const [search, setSearch]                     = useState("");
     const navigate                                = useNavigate();
     const [customCats, setCustomCats] = useState([]);
+    const [username, setUsername] = useState("");
 
     const loadCats = async () => {
         const data = await getCategories();
@@ -78,6 +79,14 @@ export default function Index() {
         }
     };
     useEffect(() => { loadCats(); }, []);
+    useEffect(() => {
+        fetch("http://localhost:8000/api/me/", {
+            headers: { "Authorization": `Bearer ${localStorage.getItem("access_token")}` }
+        })
+        .then(r => r.json())
+        .then(data => setUsername(data.username))
+        .catch(() => {});
+    }, []);
 
     const cardColors = isDark ? ["blue", "purple"] : ["yellow", "purple"];
 
@@ -112,11 +121,12 @@ export default function Index() {
         const [mon, day] = selectedDate.split(" ");
         const monthIndex = MONTH_NAMES.indexOf(mon);
         const dayNum     = parseInt(day);
-        const now        = new Date();
         const matched    = tasks.filter(t => {
             if (!t.deadline) return false;
             const d = new Date(t.deadline);
-            return d.getDate() === dayNum && d.getMonth() === monthIndex && d.getFullYear() === now.getFullYear();
+            return d.getUTCDate() === dayNum &&       // ← UTC
+                d.getUTCMonth() === monthIndex &&
+                d.getUTCFullYear() === new Date().getUTCFullYear();
         });
         setHighlightedIds(matched.map(t => t.id));
         setAllDone(matched.length > 0 && matched.every(t => t.completed));
@@ -140,7 +150,7 @@ export default function Index() {
             title:       task.title || "",
             description: task.description || "",
             deadline:    task.deadline ? task.deadline.slice(0, 16) : "",
-            category:    task.category || ""
+            category:    task.category?.name || ""
         });
     };
 
@@ -172,20 +182,27 @@ export default function Index() {
             if (editForm.deadline !== taskDeadline)
                 await updateTaskDeadline(editingTask, editForm.deadline);
         }
-        if (editForm.category && editForm.category !== task.category)
+        if (editForm.category && editForm.category !== task.category?.name)
             await updateTaskCategory(editingTask, editForm.category);
         setEditingTask(null);
         refresh();
     };
 
+    // helper to compare deadline dates correctly
+    const isSameDay = (deadlineStr, targetDate) => {
+        if (!deadlineStr) return false;
+        const d = new Date(deadlineStr);
+        return (
+            d.getUTCDate()  === targetDate.getUTCDate() &&   // ← use UTC
+            d.getUTCMonth() === targetDate.getUTCMonth() &&
+            d.getUTCFullYear() === targetDate.getUTCFullYear()
+        );
+    };
+
     const filterToday = () => {
         const now        = new Date();
-        const todayLabel = `${MONTH_NAMES[now.getMonth()]} ${String(now.getDate()).padStart(2, "0")}`;
-        const matched    = tasks.filter(t => {
-            if (!t.deadline) return false;
-            const d = new Date(t.deadline);
-            return d.getDate() === now.getDate() && d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
-        });
+        const todayLabel = `${MONTH_NAMES[now.getUTCMonth()]} ${String(now.getUTCDate()).padStart(2, "0")}`;
+        const matched    = tasks.filter(t => isSameDay(t.deadline, now));
         setHighlightedIds(matched.map(t => t.id));
         setSelectedDate(todayLabel);
         setIsFiltered(true);
@@ -195,7 +212,6 @@ export default function Index() {
     const clearFilter         = () => { setHighlightedIds([]); setSelectedDate(null); setIsFiltered(false); };
     const clearCategoryFilter = () => setSelectedCategory(null);
 
-    const username = getUsername();
     const today    = DAY_NAMES[new Date().getDay()];
 
     const visibleTasks = (() => {
@@ -203,14 +219,14 @@ export default function Index() {
         if (selectedCategory !== null) {
             list = selectedCategory === "uncategorized"
                 ? list.filter(t => !t.category)
-                : list.filter(t => t.category === selectedCategory);
+                : list.filter(t => t.category?.name === selectedCategory);
         }
         if (search.trim()) {
             const q = search.toLowerCase();
             list = list.filter(t =>
                 t.title?.toLowerCase().includes(q) ||
                 t.description?.toLowerCase().includes(q) ||
-                t.category?.toLowerCase().includes(q)
+                t.category?.name?.toLowerCase().includes(q)
             );
         }
         return list.sort((a, b) => {
@@ -386,8 +402,8 @@ export default function Index() {
 
                             <div className={`task-preview ${clickedCard === task.id ? "clicked" : ""}`}>
                                 <p>📝 {task.description || "No description"}</p>
-                                <p>⏰ {task.deadline ? new Date(task.deadline).toLocaleString() : "No deadline"}</p>
-                                <p>🏷️ {task.category || "No category"}</p>
+                                <p>⏰ {task.deadline ? new Date(task.deadline).toLocaleString('en-BD', { timeZone: 'Asia/Dhaka' }) : "No deadline"}</p>
+                                <p>{task.category?.icon} {task.category?.name || "No category"}</p>
                             </div>
                         </div>
                     ))}

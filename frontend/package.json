@@ -1,5 +1,5 @@
 {
-  "name": "frontend-react",
+  "name": "to-do-list-3.0",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -8,7 +8,7 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "start:backend": "cd /d C:\\Users\\Maestro\\fastapi+react\\to-do-list-2.0 && C:\\Users\\Maestro\\fastapi+react\\to-do-list-2.0\\venv\\Scripts\\uvicorn.exe main:app --reload",
+    "start:backend": "cd /d C:\\Users\\Maestro\\to-do-list-3.0\\backend && C:\\Users\\Maestro\\to-do-list-3.0\\venv\\Scripts\\python.exe manage.py runserver",
     "dev:all": "concurrently \"npm run dev\" \"cmd /c npm run start:backend\""
   },
   "dependencies": {

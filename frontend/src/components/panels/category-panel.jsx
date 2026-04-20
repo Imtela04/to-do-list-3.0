@@ -34,8 +34,8 @@ export function CategoryPanel({ tasks, selected, onSelect, customCats = [], onCa
     };
 
     const counts = {};
-    customCats.forEach(c => { counts[c.name] = tasks.filter(t => t.category === c.name).length; });
-    const uncategorized = tasks.filter(t => !t.category || !customCats.find(c => c.name === t.category)).length;
+    customCats.forEach(c => { counts[c.name] = tasks.filter(t => t.category?.name === c.name).length; });
+    const uncategorized = tasks.filter(t => !t.category || !customCats.find(c => c.name === t.category?.name)).length;
 
     const items = [
         { id: null,           value: null,            icon: "📋", label: "All",           count: tasks.length },
