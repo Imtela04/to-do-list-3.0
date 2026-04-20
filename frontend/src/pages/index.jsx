@@ -61,7 +61,7 @@ export default function Index() {
     const [time, setTime]                         = useState(new Date().toLocaleTimeString());
     const { isDark }                              = useContext(DarkModeContext);
     const [currentPage, setCurrentPage]           = useState(1);
-    const [tasksPerPage, setTasksPerPage]         = useState(10);
+    const [tasksPerPage, setTasksPerPage]         = useState(5);
     const [search, setSearch]                     = useState("");
     const navigate                                = useNavigate();
     const [customCats, setCustomCats] = useState([]);
@@ -246,6 +246,11 @@ export default function Index() {
         onSelect: setSelectedCategory, styles
     };
 
+    // Derived flags for global (no date filter) empty states
+    const noDateFilter = !selectedDate;
+    const globalEmpty  = noDateFilter && tasks.length === 0;
+    const globalAllDone = noDateFilter && tasks.length > 0 && tasks.every(t => t.completed);
+
     return (
         <>
         <div id="page-wrap" className="flex flex-col w-full min-h-screen"
@@ -359,13 +364,25 @@ export default function Index() {
                         </div>
                     </div>
 
-                    {/* Empty states */}
+                    {/* Empty states — date-filtered */}
                     {selectedDate && highlightedIds.length === 0 && !allDone && (
                         <div className="w-full px-4 py-6 text-2xl md:text-4xl font-mono rounded-[14px] text-center" style={styles.cardA}>
                             Nothing to do
                         </div>
                     )}
                     {selectedDate && allDone && (
+                        <div className="w-full px-4 py-6 text-2xl md:text-4xl font-mono rounded-[14px] text-center" style={styles.cardA}>
+                            All done for the day! 🎉
+                        </div>
+                    )}
+
+                    {/* Empty states — global (no date filter) */}
+                    {globalEmpty && (
+                        <div className="w-full px-4 py-6 text-2xl md:text-4xl font-mono rounded-[14px] text-center" style={styles.cardA}>
+                            Nothing to do
+                        </div>
+                    )}
+                    {globalAllDone && (
                         <div className="w-full px-4 py-6 text-2xl md:text-4xl font-mono rounded-[14px] text-center" style={styles.cardA}>
                             All done for the day! 🎉
                         </div>
